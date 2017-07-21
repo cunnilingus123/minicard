@@ -24,8 +24,8 @@ LFLAGS    ?= -Wall
 
 COPTIMIZE ?= -O3
 
-CFLAGS    += -I$(MROOT) -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
-LFLAGS    += -lz
+CFLAGS    += -I$(MROOT) -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS -m64 -fPIC
+LFLAGS    += -lz -m64
 
 .PHONY : s p d r rs clean 
 
@@ -96,7 +96,8 @@ lib$(LIB)_standard.a lib$(LIB)_profile.a lib$(LIB)_release.a lib$(LIB)_debug.a:
 ## Shared library rules (standard/profile/debug/release)
 lib$(LIB)_standard.so lib$(LIB)_profile.so lib$(LIB)_release.so lib$(LIB)_debug.so:
 	@echo Making library: "$@ ( $(foreach f,$^,$(subst $(MROOT)/,,$f)) )"
-	@$(AR) -rcsv $@ $^
+	@$(CXX) $(LFLAGS) -o $@ $^
+#	@$(AR) -rcsv $@ $^
 
 ## Library Soft Link rule:
 libs libp libd libr:
@@ -119,6 +120,10 @@ depend.mk: $(CSRCS) $(CHDRS)
 	@echo Making dependencies
 	@$(CXX) $(CFLAGS) -I$(MROOT) \
 	   $(CSRCS) -MM | sed 's|\(.*\):|$(PWD)/\1 $(PWD)/\1r $(PWD)/\1d $(PWD)/\1p:|' > depend.mk
+	@echo 'CFLAGS: $(CFLAGS)'
+	@echo 'LFLAGS: $(LFLAGS)'
+	@echo 'complete $(CXX) $(CFLAGS) -I$(MROOT) $(CSRCS) -MM'
+	@echo 's|\(.*\):|$(PWD)/\1 $(PWD)/\1r $(PWD)/\1d $(PWD)/\1p:|'
 	@for dir in $(DEPDIR); do \
 	      if [ -r $(MROOT)/$${dir}/depend.mk ]; then \
 		  echo Depends on: $${dir}; \

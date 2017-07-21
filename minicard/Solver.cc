@@ -26,11 +26,13 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 **************************************************************************************************/
 
 #include <math.h>
+#include <iostream>
 
 #include "mtl/Sort.h"
 #include "minicard/Solver.h"
 
 using namespace Minisat;
+using namespace std;
 
 //=================================================================================================
 // Options:
@@ -139,30 +141,44 @@ Var Solver::newVar(bool sign, bool dvar)
 
 bool Solver::addClause_(vec<Lit>& ps)
 {
+    printf("ADDCLAUSE %d%s", okay(), " \n");
     assert(decisionLevel() == 0);
     if (!ok) return false;
-
+    printf("ADDCLAUSE %d%s", okay(), " 1\n");
     // Check if clause is satisfied and remove false/duplicate literals:
     sort(ps);
+    printf("ADDCLAUSE %d%s", okay(), " 2\n");
     Lit p; int i, j;
-    for (i = j = 0, p = lit_Undef; i < ps.size(); i++)
-        if (value(ps[i]) == l_True || ps[i] == ~p)
+    printf("Schleife: %d\n", ps.size());
+    for (i = j = 0, p = lit_Undef; i < ps.size(); i++) {
+//        printf("  lit %d = %s\n", ps[i].x,value(ps[i]).toString());
+        cout << "  lit " << ps[i].x << " = " << value(ps[i]).toString() << endl;
+        if (value(ps[i]) == l_True || ps[i] == ~p) {
+            printf("Im if statement\n");
             return true;
-        else if (value(ps[i]) != l_False && ps[i] != p)
+        }
+        else if (value(ps[i]) != l_False && ps[i] != p) {
+            printf("Im else if statement\n");
             ps[j++] = p = ps[i];
+        }
+    }
     ps.shrink(i - j);
-
-    if (ps.size() == 0)
+    printf("ADDCLAUSE %d%s", okay(), " 3\n");
+    if (ps.size() == 0){
+        printf("Die Size ist 0\n");
         return ok = false;
+    }
     else if (ps.size() == 1){
+        printf("Die Size ist 1");
         uncheckedEnqueue(ps[0]);
+        printf("Die Size ist 1: %d", okay());
         return ok = (propagate() == CRef_Undef);
     }else{
         CRef cr = ca.alloc(ps, false);
         clauses.push(cr);
         attachClause(cr);
     }
-
+    printf("ADDCLAUSE %d%s", okay(), " 4\n");
     return true;
 }
 
@@ -878,20 +894,20 @@ void Solver::rebuildOrderHeap()
 bool Solver::simplify()
 {
     assert(decisionLevel() == 0);
-
+    printf("Hier1 %d\n", ok);
     if (!ok || propagate() != CRef_Undef)
         return ok = false;
-
+printf("Hier2\n");
     if (nAssigns() == simpDB_assigns || (simpDB_props > 0))
         return true;
-
+printf("Hier3\n");
     // Remove satisfied clauses:
     removeSatisfied(learnts);
     if (remove_satisfied)        // Can be turned off.
         removeSatisfied(clauses);
     checkGarbage();
     rebuildOrderHeap();
-
+printf("Hier4\n");
     simpDB_assigns = nAssigns();
     simpDB_props   = clauses_literals + learnts_literals;   // (shouldn't depend on stats really, but it will do for now)
 

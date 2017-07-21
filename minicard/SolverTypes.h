@@ -30,6 +30,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #define Minisat_SolverTypes_h
 
 #include <assert.h>
+#include <string>
+#include <sstream>
 
 #include "mtl/IntTypes.h"
 #include "mtl/Alg.h"
@@ -68,6 +70,11 @@ inline  Lit  operator ~(Lit p)              { Lit q; q.x = p.x ^ 1; return q; }
 inline  Lit  operator ^(Lit p, bool b)      { Lit q; q.x = p.x ^ (unsigned int)b; return q; }
 inline  bool sign      (Lit p)              { return p.x & 1; }
 inline  int  var       (Lit p)              { return p.x >> 1; }
+inline  std::string toString(Lit l) { 
+    std::stringstream str;
+    str << (sign(l) ? "-" : "+") << var(l);
+    return str.str();
+}
 
 // Mapping Literals to and from compact integers suitable for array indexing:
 inline  int  toInt     (Var v)              { return v; } 
@@ -118,6 +125,15 @@ public:
 
     friend int   toInt  (lbool l);
     friend lbool toLbool(int   v);
+    std::string toString(){
+        if( *this == l_True )
+            return "LTRUE";
+        else if( *this == l_False )
+            return "LFALSE";
+        else if( *this == l_Undef )
+            return "LUNDEF";
+        return "LFEHLER";
+    }
 };
 inline int   toInt  (lbool l) { return l.value; }
 inline lbool toLbool(int   v) { return lbool((uint8_t)v);  }

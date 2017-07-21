@@ -1,0 +1,3 @@
+#! /bin/sh
+
+mv libminisat_standard.so ~/.lib/libminisat.so
