@@ -120,10 +120,7 @@ depend.mk: $(CSRCS) $(CHDRS)
 	@echo Making dependencies
 	@$(CXX) $(CFLAGS) -I$(MROOT) \
 	   $(CSRCS) -MM | sed 's|\(.*\):|$(PWD)/\1 $(PWD)/\1r $(PWD)/\1d $(PWD)/\1p:|' > depend.mk
-	@echo 'CFLAGS: $(CFLAGS)'
-	@echo 'LFLAGS: $(LFLAGS)'
-	@echo 'complete $(CXX) $(CFLAGS) -I$(MROOT) $(CSRCS) -MM'
-	@echo 's|\(.*\):|$(PWD)/\1 $(PWD)/\1r $(PWD)/\1d $(PWD)/\1p:|'
+
 	@for dir in $(DEPDIR); do \
 	      if [ -r $(MROOT)/$${dir}/depend.mk ]; then \
 		  echo Depends on: $${dir}; \

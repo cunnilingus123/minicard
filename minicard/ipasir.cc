@@ -29,7 +29,6 @@ IN THE SOFTWARE.
 #include <vector>
 #include <complex>
 #include <cassert>
-#include <iostream>
 
 #if defined _WIN32
     #define DLL_PUBLIC __declspec(dllexport)
@@ -77,7 +76,6 @@ DLL_PUBLIC const char * ipasir_signature ()
 DLL_PUBLIC void * ipasir_init ()
 {
     MySolver *s = new MySolver;
-    printf("Pointer in C: %p\n",  s);
     return (void*)s;
 }
 
@@ -112,30 +110,15 @@ DLL_PUBLIC void ipasir_release (void * solver)
  */
 DLL_PUBLIC void ipasir_add (void * solver, int lit_or_zero)
 {
-    printf("ES GEHT LOS!! %d\n", lit_or_zero);
     MySolver* s = (MySolver*)solver;
-    printf("Stelle w %d\n", s->solver->okay());
-
     if (lit_or_zero == 0) {
-        printf("AddingClause: ");
-        for( int i = 0; i < s->clause.size(); i++)
-            cout << toString(s->clause[i]) << " = " << s->solver->value(s->clause[i]).toString() << endl;
-        printf("\n");
-        printf("Stelle s %d\n", s->solver->okay());
 
         s->solver->addClause(s->clause);
-        printf("clause added: \n");
-        for( int i = 0; i < s->clause.size(); i++)
-            cout << toString(s->clause[i]) << " = " << s->solver->value(s->clause[i]).toString() << endl;
-        printf("Stelle t %d\n", s->solver->okay());
         s->clause.clear();
     } else {
-        while (std::abs(lit_or_zero) > s->solver->nVars()) {
+        while (std::abs(lit_or_zero) > s->solver->nVars())
             s->solver->newVar();
-            cout << "newVar" << s->solver->value(s->solver->nVars()-1).toString() << endl;
-        }
         Lit lit = mkLit(std::abs(lit_or_zero)-1, lit_or_zero < 0);
-        cout << "created " << toString(lit) << " = " << s->solver->value(lit).toString() << endl;
        	/*
 	if (lit.x >= s->solver->nVars()) {
             const uint32_t toadd = lit.x - s->solver->nVars() + 1;
@@ -144,7 +127,6 @@ DLL_PUBLIC void ipasir_add (void * solver, int lit_or_zero)
 	*/
         s->clause.push(lit);
     }
-    printf("Stelle x %d\n", s->solver->okay());
 }
 
 /**
@@ -175,20 +157,12 @@ DLL_PUBLIC void ipasir_assume (void * solver, int lit)
 DLL_PUBLIC int ipasir_solve (void * solver)
 {
     MySolver* s = (MySolver*)solver;
-    printf("Stelle y %d\n", s->solver->okay() );
     if(!s->solver->simplify()){
-        printf("Not simple\n");
         return 20;
     }
+
     lbool ret = s->solver->solveLimited(s->assumptions);
     s->assumptions.clear();
-
-    printf("Anzahl: %d\n", s->solver->nVars());
-    for (int i = 0; i < s->solver->nVars(); i++) {
-        if (s->solver->model[i] != l_Undef)
-            printf("%s%s%d", (i==0)?"":" ", (s->solver->model[i]==l_True)?"":"-", i+1);
-    }
-    printf("\n");
 
     if (ret == l_True) {
         return 10;
@@ -217,8 +191,13 @@ DLL_PUBLIC int ipasir_val (void * solver, int lit)
 
     const int a = std::abs(lit)-1;
     const bool flip = lit < 0;
+    
+    const lbool modelValue = s->solver->model[a];
+    const bool  modelBool  = modelValue == l_True;
 
-    return (s->solver->model[a] == l_True) ^ flip;
+    if( modelValue == l_Undef )
+        return 0;
+    return modelBool ^ flip ? lit : -lit;
 }
 
 /**

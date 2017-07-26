@@ -70,10 +70,9 @@ inline  Lit  operator ~(Lit p)              { Lit q; q.x = p.x ^ 1; return q; }
 inline  Lit  operator ^(Lit p, bool b)      { Lit q; q.x = p.x ^ (unsigned int)b; return q; }
 inline  bool sign      (Lit p)              { return p.x & 1; }
 inline  int  var       (Lit p)              { return p.x >> 1; }
-inline  std::string toString(Lit l) { 
-    std::stringstream str;
-    str << (sign(l) ? "-" : "+") << var(l);
-    return str.str();
+
+inline void printLit( Lit l ) { 
+    printf( "%s%d", (sign(l) ? "-" : "+"), var(l) );
 }
 
 // Mapping Literals to and from compact integers suitable for array indexing:
@@ -125,15 +124,6 @@ public:
 
     friend int   toInt  (lbool l);
     friend lbool toLbool(int   v);
-    std::string toString(){
-        if( *this == l_True )
-            return "LTRUE";
-        else if( *this == l_False )
-            return "LFALSE";
-        else if( *this == l_Undef )
-            return "LUNDEF";
-        return "LFEHLER";
-    }
 };
 inline int   toInt  (lbool l) { return l.value; }
 inline lbool toLbool(int   v) { return lbool((uint8_t)v);  }
