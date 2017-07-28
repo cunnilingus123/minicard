@@ -26,6 +26,9 @@ IN THE SOFTWARE.
 
 #include "Solver.h"
 #include "SolverTypes.h"
+// #include "cardinalityAdder.h"
+// #include "ipasir.h"
+
 #include <vector>
 #include <complex>
 #include <cassert>
@@ -40,7 +43,6 @@ IN THE SOFTWARE.
 using std::vector;
 
 using namespace Minisat;
-using namespace std;
 
 struct MySolver {
     ~MySolver()
@@ -59,7 +61,48 @@ struct MySolver {
 };
 
 extern "C" {
+  
+DLL_PUBLIC void addingCardinatity(void* solverPtr, uint32_t size, int32_t* vars, int32_t k)
+{
+    printf("Start adding cardinality constraint.\n");
+    printf("Solver Pointer: %p\n", solverPtr);
+    printf("Size: %d\n", size);
+    printf("K: %d\n", k);
+    printf("vars: ");
+    for(uint32_t i = 0; i < size; i++) {
+        printf("%d ", vars[i]);
+        if( vars[i] == 0 ){
+            printf("no variable for 0");
+            return;
+        }
+    }
+    printf("\n");
 
+    MySolver* ms   = (MySolver*) solverPtr;
+    Solver* solver = ms->solver;
+    
+    vec<Lit> ps;
+    for(uint32_t i = 0; i < size; i++) {
+        ps.push( mkLit( std::abs(vars[i]) - 1, vars[i] < 0 ) );
+    }
+
+    bool ok = solver->addAtMost(ps, k);
+
+/*
+    printf( "As Vector (k=%d): ", k );
+    for( int i = 0; i < ps.size(); i++ )
+        printf( " %d", ps[i].x );
+    printf("\n");
+*/
+    printf( "ok = %d\n", ok ); 
+
+    // bool    addAtMost (const vec<Lit>& ps, int k);
+}
+
+/**
+ * Return the name and the version of the incremental SAT
+ * solving library.
+ */
 DLL_PUBLIC const char * ipasir_signature ()
 {
     return "MiniCARD 1.2, based on MiniSAT 2.2.0";
